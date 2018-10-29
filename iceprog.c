@@ -462,14 +462,14 @@ static void flash_disable_protection()
 
 static void help(const char *progname)
 {
-	fprintf(stderr, "Simple programming tool for SERPROG programmers.\n");
+	fprintf(stderr, "Simple programming tool for iCE40 FPGA using SERPROG programmers.\n");
 	fprintf(stderr, "Usage: %s [-b|-n|-c] <input file>\n", progname);
 	fprintf(stderr, "       %s -r|-R<bytes> <output file>\n", progname);
 	fprintf(stderr, "       %s -S <input file>\n", progname);
 	fprintf(stderr, "       %s -t\n", progname);
 	fprintf(stderr, "\n");
 	fprintf(stderr, "General options:\n");
-	fprintf(stderr, "  -d <device string>    use the specified serial device [default /dev/ttyACM0]\n");
+	fprintf(stderr, "  -d <device string>    use the specified serial device [default " DEF_SERIAL_DEV "]\n");
 	fprintf(stderr, "  -o <offset in bytes>  start address for read/write [default: 0]\n");
 	fprintf(stderr, "                          (append 'k' to the argument for size in kilobytes,\n");
 	fprintf(stderr, "                          or 'M' for size in megabytes)\n");
@@ -512,7 +512,7 @@ static void help(const char *progname)
 	fprintf(stderr, "  An unmodified iCEstick can only be programmed via the serial flash.\n");
 	fprintf(stderr, "  Direct programming of the SRAM is not supported. For direct SRAM\n");
 	fprintf(stderr, "  programming the flash chip and one zero ohm resistor must be desoldered\n");
-	fprintf(stderr, "  and the FT2232H SI pin must be connected to the iCE SPI_SI pin, as shown\n");
+	fprintf(stderr, "  and the programmer SI pin must be connected to the iCE SPI_SI pin, as shown\n");
 	fprintf(stderr, "  in this picture:\n");
 	fprintf(stderr, "  http://www.clifford.at/gallery/2014-elektronik/IMG_20141115_183838\n");
 	fprintf(stderr, "\n");
@@ -521,7 +521,7 @@ static void help(const char *progname)
 	fprintf(stderr, "  mode (SRAM or FLASH). See the iCE40-HX8K user manual for details.\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "If you have a bug report, please file an issue on github:\n");
-	fprintf(stderr, "  https://github.com/cliffordwolf/icestorm/issues\n");
+	fprintf(stderr, "  https://github.com/dmsc/iceprog-fser/issues\n");
 }
 
 int main(int argc, char **argv)
@@ -770,7 +770,7 @@ int main(int argc, char **argv)
 	// ---------------------------------------------------------
 
         if (devstr == NULL)
-            devstr = "/dev/ttyACM0";
+            devstr = DEF_SERIAL_DEV;
 
 	if (serialport_open(devstr, 1000000)) {
 		fprintf(stderr, "Can't find SERPROG device (device string %s).\n", devstr);
@@ -785,11 +785,9 @@ int main(int argc, char **argv)
 		// set 6 MHz clock
                 clock = serprog_spi_set_clock( 6000000 );
 	}
-        fprintf(stderr, "Actual SPI clock: %.3f kHz\n", 0.001 * clock);
+        fprintf(stderr, "actual SPI clock: %.3f kHz\n", 0.001 * clock);
 
-        /*
 	fprintf(stderr, "cdone: %s\n", get_cdone() ? "high" : "low");
-        */
 
         enable_prog();
 	usleep(100000);

@@ -25,6 +25,8 @@
 
 #pragma once
 
+#define DEF_SERIAL_DEV "/dev/ttyACM0"
+
 /*  Reads "readcnt" bytes from serial port. */
 int serialport_read(unsigned char *buf, unsigned int readcnt);
 
