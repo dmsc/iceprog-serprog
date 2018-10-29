@@ -20,20 +20,19 @@
  */
 
 /*
- * serprog.h: Flashrom "serprog" protocol.
+ * serial.h: Linux serial port handling.
  */
 
 #pragma once
 
-/* Transmit "writecnt" bytes and then receives "readcnt" bytes from SPI */
-int serprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-                             const unsigned char *writearr, unsigned char *readarr);
+/*  Reads "readcnt" bytes from serial port. */
+int serialport_read(unsigned char *buf, unsigned int readcnt);
 
-/* Set SPI clock, in Hz, returns actual speed. */
-unsigned serprog_spi_set_clock(unsigned clock_hz);
+/*  Writes "writecnt" bytes from serial port. */
+int serialport_write(const unsigned char *buf, unsigned int writecnt);
 
-/* Enable SPI programmer. */
-void enable_prog();
+/*  Opens serial device and sets baud rate. */
+int serialport_open(const char *dev, int baud);
 
-/* Disable SPI programmer - puts pins in input mode. */
-void disable_prog();
+/*  Closes serial port. */
+void serialport_close(void);

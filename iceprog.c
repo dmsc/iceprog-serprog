@@ -1,8 +1,9 @@
 /*
- *  iceprog -- simple programming tool for FTDI-based Lattice iCE programmers
+ *  iceprog -- simple programming tool for Lattice iCE FPGA
  *
  *  Copyright (C) 2015  Clifford Wolf <clifford@clifford.at>
  *  Copyright (C) 2018  Piotr Esden-Tempski <piotr@esden.net>
+ *  Copyright (C) 2018  Daniel Serpell <daniel.serpell@gmail.com>
  *
  *  Permission to use, copy, modify, and/or distribute this software for any
  *  purpose with or without fee is hereby granted, provided that the above
@@ -37,8 +38,8 @@
 #include <termios.h>
 #include <fcntl.h>
 #include "serprog.h"
+#include "serial.h"
 
-static int serprog_fd;
 static bool verbose = false;
 
 
@@ -126,212 +127,6 @@ enum flash_cmd {
 	FC_ERESET = 0x66, /* Enable Reset */
 	FC_RESET = 0x99, /* Reset Device */
 };
-
-static int serialport_read(unsigned char *buf, unsigned int readcnt)
-{
-        ssize_t tmp = 0;
-
-        while (readcnt > 0) {
-                tmp = read(serprog_fd, buf, readcnt);
-                if (tmp == -1) {
-                        fprintf(stderr, "Serial port read error!\n");
-                        return 1;
-                }
-                if (!tmp)
-                        fprintf(stderr, "Empty read\n");
-                readcnt -= tmp;
-                buf += tmp;
-        }
-
-        return 0;
-}
-
-
-static int serialport_write(const unsigned char *buf, unsigned int writecnt)
-{
-        ssize_t tmp = 0;
-        unsigned int empty_writes = 250; /* results in a ca. 125ms timeout */
-
-        while (writecnt > 0) {
-                tmp = write(serprog_fd, buf, writecnt);
-                if (tmp == -1) {
-                        fprintf(stderr, "Serial port write error!\n");
-                        return 1;
-                }
-                if (!tmp) {
-                        fprintf(stderr, "Empty write\n");
-                        empty_writes--;
-                        usleep(500);
-                        if (empty_writes == 0) {
-                                fprintf(stderr,"Serial port is unresponsive!\n");
-                                return 1;
-                        }
-                }
-                writecnt -= tmp;
-                buf += tmp;
-        }
-
-        return 0;
-}
-
-static int sp_docommand(uint8_t command, uint32_t parmlen,
-                        uint8_t *params, uint32_t retlen, void *retparms)
-{
-        unsigned char c;
-        if (serialport_write(&command, 1) != 0) {
-                fprintf(stderr, "Error: cannot write op code: %s\n", strerror(errno));
-                return 1;
-        }
-        if (serialport_write(params, parmlen) != 0) {
-                fprintf(stderr, "Error: cannot write parameters: %s\n", strerror(errno));
-                return 1;
-        }
-        if (serialport_read(&c, 1) != 0) {
-                fprintf(stderr, "Error: cannot read from device: %s\n", strerror(errno));
-                return 1;
-        }
-        if (c == S_NAK)
-                return 1;
-        if (c != S_ACK) {
-                fprintf(stderr, "Error: invalid response 0x%02X from device (to command 0x%02X)\n", c, command);
-                return 1;
-        }
-        if (retlen) {
-                if (serialport_read(retparms, retlen) != 0) {
-                        fprintf(stderr, "Error: cannot read return parameters: %s\n", strerror(errno));
-                        return 1;
-                }
-        }
-        return 0;
-}
-
-#ifdef __linux
-
-#include <sys/ioctl.h>
-
-// Copied from Linux kernel headers, to support missing
-// arbitrary baud rates in GLIBC.
-#define LINUX_NCCS 19
-
-struct linux_termios2
-{
-  tcflag_t c_iflag;           /* input mode flags */
-  tcflag_t c_oflag;           /* output mode flags */
-  tcflag_t c_cflag;           /* control mode flags */
-  tcflag_t c_lflag;           /* local mode flags */
-  cc_t c_line;                /* line discipline */
-  cc_t c_cc[LINUX_NCCS];      /* control characters */
-  speed_t c_ispeed;           /* input speed */
-  speed_t c_ospeed;           /* output speed */
-};
-
-#define termios2 linux_termios2
-
-// Simple wrappers
-static int linux_tcsetattr(int fd, int optional_actions, const struct linux_termios2 *t)
-{
- return ioctl(fd, TCSETS2, t);
-}
-
-#if 0
-static int linux_tcgetattr(int fd, const struct linux_termios2 *t)
-{
- return ioctl(fd, TCGETS2, t);
-}
-#endif
-
-static int serialport_config(int baud)
-{
-    struct termios2 tty;
-    memset(&tty, 0, sizeof tty);
-
-    tty.c_cflag &= ~(CSIZE | PARENB | PARODD | CSTOPB | CRTSCTS);
-    tty.c_cflag |= (CS8 | CLOCAL | CREAD);
-    tty.c_iflag &= ~(IGNBRK | IXON | IXOFF | IXANY);
-    tty.c_lflag = 0;                            // no signaling chars, no echo,
-    // no canonical processing
-    tty.c_oflag = 0;                            // no remapping, no delays
-    tty.c_cc[VMIN] = 0;                         // read doesn't block
-    tty.c_cc[VTIME] = -1;                        // no read timeout
-
-    tty.c_cflag |= CBAUDEX;
-    tty.c_ispeed = tty.c_ospeed = baud;
-
-    if (linux_tcsetattr(serprog_fd, TCSANOW, &tty) != 0) {
-        fprintf(stderr, "error %d from tcsetattr", errno);
-        return -1;
-    }
-    return 0;
-}
-
-#endif // __linux
-
-static int open_serport(const char *dev, int baud)
-{
-        serprog_fd = open(dev, O_RDWR | O_NOCTTY | O_NDELAY); // Use O_NDELAY to ignore DCD state
-        if (serprog_fd < 0) {
-                fprintf(stderr, "Error: cannot open serial port: %s\n", strerror(errno));
-                return 1;
-        }
-
-        /* Ensure that we use blocking I/O */
-        const int flags = fcntl(serprog_fd, F_GETFL);
-        if (flags == -1) {
-                fprintf(stderr, "Error: cannot set serial port mode: %s\n", strerror(errno));
-                goto err;
-        }
-        if (fcntl(serprog_fd, F_SETFL, flags & ~O_NONBLOCK) != 0) {
-                fprintf(stderr, "Error: cannot set serial port to blocking: %s\n", strerror(errno));
-                goto err;
-        }
-        if (serialport_config(baud) != 0) {
-                goto err;
-        }
-        return 0;
-err:
-        close(serprog_fd);
-        return 1;
-}
-
-
-static int serprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-                                    const unsigned char *writearr, unsigned char *readarr)
-{
-        unsigned char *parmbuf;
-        int ret;
-
-        parmbuf = malloc(writecnt + 6);
-        if (!parmbuf) {
-                fprintf(stderr, "Error: could not allocate SPI send param buffer.\n");
-                return 1;
-        }
-        parmbuf[0] = (writecnt >> 0) & 0xFF;
-        parmbuf[1] = (writecnt >> 8) & 0xFF;
-        parmbuf[2] = (writecnt >> 16) & 0xFF;
-        parmbuf[3] = (readcnt >> 0) & 0xFF;
-        parmbuf[4] = (readcnt >> 8) & 0xFF;
-        parmbuf[5] = (readcnt >> 16) & 0xFF;
-        memcpy(parmbuf + 6, writearr, writecnt);
-        ret = sp_docommand(S_CMD_O_SPIOP, writecnt + 6, parmbuf, readcnt, readarr);
-        free(parmbuf);
-        return ret;
-}
-
-static void enable_prog()
-{
-    uint8_t c = 1;
-    int ret = sp_docommand(S_CMD_S_PIN_STATE, 1, &c, 0, 0);
-    if( ret )
-        fprintf(stderr,"Error, can't enable prog\n");
-}
-
-static void disable_prog()
-{
-    uint8_t c = 0;
-    int ret = sp_docommand(S_CMD_S_PIN_STATE, 1, &c, 0, 0);
-    if( ret )
-        fprintf(stderr,"Error, can't disable prog\n");
-}
 
 static void send_spi(uint8_t *data, int n)
 {
@@ -977,25 +772,22 @@ int main(int argc, char **argv)
         if (devstr == NULL)
             devstr = "/dev/ttyACM0";
 
-	if (open_serport(devstr, 1000000)) {
+	if (serialport_open(devstr, 1000000)) {
 		fprintf(stderr, "Can't find SERPROG device (device string %s).\n", devstr);
 		exit(2);
 	}
 
-        /* TODO:
+        unsigned clock = 0;
 	if (slow_clock) {
-
 		// set 50 kHz clock
-		send_byte(MC_SET_CLK_DIV);
-		send_byte(119);
-		send_byte(0x00);
+                clock = serprog_spi_set_clock( 50000 );
 	} else {
 		// set 6 MHz clock
-		send_byte(MC_SET_CLK_DIV);
-		send_byte(0x00);
-		send_byte(0x00);
+                clock = serprog_spi_set_clock( 6000000 );
 	}
+        fprintf(stderr, "Actual SPI clock: %.3f kHz\n", 0.001 * clock);
 
+        /*
 	fprintf(stderr, "cdone: %s\n", get_cdone() ? "high" : "low");
         */
 
@@ -1146,6 +938,6 @@ int main(int argc, char **argv)
 
 	fprintf(stderr, "Bye.\n");
         disable_prog();
-        close( serprog_fd );
+        serialport_close();
 	return 0;
 }
