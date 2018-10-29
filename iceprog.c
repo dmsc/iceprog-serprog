@@ -772,7 +772,7 @@ int main(int argc, char **argv)
         if (devstr == NULL)
             devstr = DEF_SERIAL_DEV;
 
-	if (serialport_open(devstr, 1000000)) {
+	if (serialport_open(devstr, 1000000) || serprog_detect() ) {
 		fprintf(stderr, "Can't find SERPROG device (device string %s).\n", devstr);
 		exit(2);
 	}

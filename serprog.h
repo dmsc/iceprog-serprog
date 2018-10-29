@@ -32,6 +32,9 @@ int serprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 /* Set SPI clock, in Hz, returns actual speed. */
 unsigned serprog_spi_set_clock(unsigned clock_hz);
 
+/* Detect serprog programmer. */
+int serprog_detect();
+
 /* Enable SPI programmer. */
 void enable_prog();
 

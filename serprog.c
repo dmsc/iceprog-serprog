@@ -127,16 +127,59 @@ unsigned serprog_spi_set_clock(unsigned clock_hz)
     return 0;
 }
 
+static int cmd_check(uint8_t cmd, uint8_t map[32])
+{
+    int byte = (cmd >> 3) & 31;
+    int mask = 1 << (cmd & 7);
+    return !(map[byte] & mask);
+}
+
+int serprog_detect()
+{
+    if( sp_docommand(S_CMD_NOP, 0, 0, 0, 0) )
+    {
+        fprintf(stderr, "Error, missing programmer\n");
+        return 1;
+    }
+
+    uint8_t iver[2], cmdmap[32];
+    if( sp_docommand(S_CMD_Q_IFACE, 0, 0, 2, iver) || iver[0] != 1 || iver[1] != 0 ||
+        sp_docommand(S_CMD_Q_CMDMAP, 0, 0, 32, cmdmap) )
+    {
+        fprintf(stderr, "Error, programmer interface invalid\n");
+        return 1;
+    }
+
+    // Check that our commands are available
+    if( cmd_check( S_CMD_O_SPIOP, cmdmap ) )
+    {
+        fprintf(stderr, "Error, programmer does not support SPI operations\n");
+        return 1;
+    }
+    if( cmd_check( S_CMD_S_SPI_FREQ, cmdmap ) )
+    {
+        fprintf(stderr, "Error, programmer does not support setting SPI frequency\n");
+        return 1;
+    }
+    if( cmd_check( S_CMD_S_PIN_STATE, cmdmap ) )
+    {
+        fprintf(stderr, "Error, programmer does not support enabling and disabling SPI pins\n");
+        return 1;
+    }
+
+    return 0;
+}
+
 void enable_prog()
 {
     uint8_t c = 1;
     if( sp_docommand(S_CMD_S_PIN_STATE, 1, &c, 0, 0) )
-        fprintf(stderr,"Error, can't enable prog\n");
+        fprintf(stderr, "Error, can't enable prog\n");
 }
 
 void disable_prog()
 {
     uint8_t c = 0;
     if( sp_docommand(S_CMD_S_PIN_STATE, 1, &c, 0, 0) )
-        fprintf(stderr,"Error, can't disable prog\n");
+        fprintf(stderr, "Error, can't disable prog\n");
 }
