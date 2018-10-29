@@ -8,3 +8,4 @@ OBJS=\
 all: iceprog
 
 iceprog: $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^
