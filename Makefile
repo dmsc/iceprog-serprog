@@ -28,6 +28,7 @@ EXEC_SUFFIX := .exe
 CFLAGS += -posix
 CFLAGS += -Dffs=__builtin_ffs
 CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
+LDFLAGS += -ltermiwin
 endif
 
 SRCS = serial.c serprog.c iceprog.c
