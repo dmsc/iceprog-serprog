@@ -1,0 +1,3 @@
+[submodule "termiWin"]
+	path = termiWin
+	url = https://github.com/veeso/termiWin

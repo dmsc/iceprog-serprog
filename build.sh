@@ -23,16 +23,17 @@ prepare_dirs(){
 	if [ ! -d $BINDIR_X64 ]; then
 		mkdir -p $BINDIR_X64 || exit 1
 	fi
+	git submodule update --init --recursive || exit 1
 	return 0
 }
 
 build_target_x86(){
-	make -C $SRC_DIR CC=i686-w64-mingw32-gcc STRIP=i686-w64-mingw32-strip CONFIG_STATIC=yes TARGET_OS=MinGW strip && mv $SRC_DIR/*.exe $BINDIR_X86
+	make -C $SRC_DIR CC=i686-w64-mingw32-gcc STRIP=i686-w64-mingw32-strip CONFIG_STATIC=yes TARGET_OS=MinGW LIBS_BASE=$PWD/termiWin strip && mv $SRC_DIR/*.exe $BINDIR_X86
 	return 0
 }
 
 build_target_x64(){
-	make -C $SRC_DIR CC=x86_64-w64-mingw32-gcc STRIP=x86_64-w64-mingw32-strip CONFIG_STATIC=yes TARGET_OS=MinGW strip && mv $SRC_DIR/*.exe $BINDIR_X64
+	make -C $SRC_DIR CC=x86_64-w64-mingw32-gcc STRIP=x86_64-w64-mingw32-strip CONFIG_STATIC=yes TARGET_OS=MinGW LIBS_BASE=$PWD/termiWin strip && mv $SRC_DIR/*.exe $BINDIR_X64
 	return 0
 }
 
