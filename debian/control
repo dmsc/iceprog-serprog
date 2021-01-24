@@ -1,0 +1,13 @@
+Source: iceprog
+Priority: optional
+Maintainer: dmsc <https://github.com/dmsc/iceprog-serprog>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 4.1.3
+Section: electronics
+Vcs-Git: https://github.com/dmsc/iceprog-serprog.git
+Vcs-Browser: https://github.com/dmsc/iceprog-serprog
+
+Package: iceprog
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Programmer for iCE40 FPGA boards using flashrom serprog protocol.
