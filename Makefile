@@ -1,5 +1,5 @@
-ICEPROG     = iceprog
-PKG         = $(ICEPROG)
+TARGET      = iceprog
+PKG         = $(TARGET)
 
 CC         ?= gcc
 STRIP      ?= strip
@@ -33,21 +33,21 @@ endif
 
 SRCS = serial.c serprog.c iceprog.c
 
-$(PKG): $(ICEPROG)$(EXEC_SUFFIX)
+$(PKG): $(TARGET)$(EXEC_SUFFIX)
 
-$(ICEPROG)$(EXEC_SUFFIX): $(SRCS)
+$(TARGET)$(EXEC_SUFFIX): $(SRCS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 clean:
-	rm -f $(ICEPROG)$(EXEC_SUFFIX)
+	rm -f $(TARGET)$(EXEC_SUFFIX)
 
-strip: $(ICEPROG)$(EXEC_SUFFIX)
-	$(STRIP) $(ICEPROG)$(EXEC_SUFFIX)
+strip: $(TARGET)$(EXEC_SUFFIX)
+	$(STRIP) $(TARGET)$(EXEC_SUFFIX)
 
-install: $(ICEPROG)
+install: $(TARGET)
 	mkdir -p $(DESTDIR)$(BINDIR)
 	mkdir -p $(DESTDIR)/etc/udev/rules.d
-	$(INSTALL) -m 0755 $(ICEPROG) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 $(TARGET) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0664 40-persistent-serprog.rules $(DESTDIR)/etc/udev/rules.d/40-persistent-serprog.rules
 
 install-udev-rule:
