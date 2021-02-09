@@ -36,7 +36,7 @@ SRCS = serial.c serprog.c iceprog.c
 $(PKG): $(TARGET)$(EXEC_SUFFIX)
 
 $(TARGET)$(EXEC_SUFFIX): $(SRCS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) $(SRCS) $(LDFLAGS) -o $@
 
 clean:
 	rm -f $(TARGET)$(EXEC_SUFFIX)
