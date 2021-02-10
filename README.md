@@ -7,17 +7,7 @@ A Programmer for iCE40 FPGA boards using flashrom serprog protocol.
 
 **Requirements**
 
-* mingw-w64, git and make (via apt Command Line Tools)
-
-**Compiling for Windows**
-
-After installing the necessary tools, building `iceprog` is as simple as running the included script:
-
-```
-./build.sh
-```
-
-After successful compilation, the target executable file will be generated in the `build` folder.
+* git and make (via apt Command Line Tools)
 
 **Compiling for Linux**
 
@@ -36,7 +26,6 @@ Using `iceprog --help` is straightforward.
 **Author**
 
 Originally written by [dmsc](https://github.com/dmsc/iceprog-serprog) and released under the terms of the GNU GPL, version 2, or later. 
-Improved by [Droid-MAX](https://github.com/Droid-MAX/) to make it more easier build for Windows.
 
 **License**
 
