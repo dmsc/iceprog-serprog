@@ -20,16 +20,16 @@ ifeq ($(CONFIG_STATIC), yes)
 LDFLAGS += -static
 endif
 
-$(PKG): $(TARGET)$(EXEC_SUFFIX)
+$(PKG): $(TARGET)
 
-$(TARGET)$(EXEC_SUFFIX): $(SRCS)
+$(TARGET): $(SRCS)
 	$(CC) $(CFLAGS) $(SRCS) $(LDFLAGS) -o $@
 
 clean:
-	rm -f $(TARGET)$(EXEC_SUFFIX)
+	rm -f $(TARGET)
 
-strip: $(TARGET)$(EXEC_SUFFIX)
-	$(STRIP) $(TARGET)$(EXEC_SUFFIX)
+strip: $(TARGET)
+	$(STRIP) $(TARGET)
 
 install: $(TARGET)
 	mkdir -p $(DESTDIR)$(BINDIR)
