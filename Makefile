@@ -8,30 +8,17 @@ PREFIX     ?= /usr
 BINDIR     ?= $(PREFIX)/bin
 CFLAGS     ?= -O2 -Wall
 LDFLAGS    ?= 
-WARNERROR  ?= no
 
-ifeq ($(WARNERROR), yes)
-CFLAGS += -Werror
-endif
+SRCS = serial.c serprog.c iceprog.c
 
 ifdef LIBS_BASE
 CFLAGS += -I$(LIBS_BASE)/include
 LDFLAGS += -L$(LIBS_BASE)/lib -Wl,-rpath -Wl,$(LIBS_BASE)/lib
 endif
 
-ifeq ($(CONFIG_STATIC),yes)
+ifeq ($(CONFIG_STATIC), yes)
 LDFLAGS += -static
 endif
-
-ifeq ($(TARGET_OS), MinGW)
-EXEC_SUFFIX := .exe
-CFLAGS += -posix
-CFLAGS += -Dffs=__builtin_ffs
-CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
-LDFLAGS += -ltermiwin
-endif
-
-SRCS = serial.c serprog.c iceprog.c
 
 $(PKG): $(TARGET)$(EXEC_SUFFIX)
 
