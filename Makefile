@@ -20,16 +20,23 @@ ifeq ($(CONFIG_STATIC), yes)
 LDFLAGS += -static
 endif
 
-$(PKG): $(TARGET)
+ifeq ($(TARGET_OS), MinGW)
+EXEC_SUFFIX := .exe
+CFLAGS += -posix
+CFLAGS += -Dffs=__builtin_ffs
+CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
+endif
 
-$(TARGET): $(SRCS)
+$(PKG): $(TARGET)$(EXEC_SUFFIX)
+
+$(TARGET)$(EXEC_SUFFIX): $(SRCS)
 	$(CC) $(CFLAGS) $(SRCS) $(LDFLAGS) -o $@
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET)$(EXEC_SUFFIX)
 
-strip: $(TARGET)
-	$(STRIP) $(TARGET)
+strip: $(TARGET)$(EXEC_SUFFIX)
+	$(STRIP) $(TARGET)$(EXEC_SUFFIX)
 
 install: $(TARGET)
 	mkdir -p $(DESTDIR)$(BINDIR)
