@@ -7,7 +7,7 @@ A Programmer for iCE40 FPGA boards using flashrom serprog protocol.
 
 **Requirements**
 
-* mingw-w64, git and make (via apt Command Line Tools)
+* mingw-w64/gcc, git and make (via apt Command Line Tools)
 
 **Compiling for Windows**
 
