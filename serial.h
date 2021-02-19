@@ -25,8 +25,6 @@
 
 #pragma once
 
-#define DEF_SERIAL_DEV "/dev/ttyACM0"
-
 /*  Reads "readcnt" bytes from serial port. */
 int serialport_read(unsigned char *buf, unsigned int readcnt);
 
@@ -38,3 +36,6 @@ int serialport_open(const char *dev, int baud);
 
 /*  Closes serial port. */
 void serialport_close(void);
+
+/* Returns default serial device */
+const char *serialport_get_default_device(void);
