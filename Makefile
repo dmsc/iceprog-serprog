@@ -9,7 +9,7 @@ BINDIR     ?= $(PREFIX)/bin
 CFLAGS     ?= -O2 -Wall
 LDFLAGS    ?= 
 
-SRCS = serial.c serprog.c iceprog.c
+SRCS = serial.c serial-lnx.c serial-w32.c serprog.c iceprog.c
 
 ifdef LIBS_BASE
 CFLAGS += -I$(LIBS_BASE)/include

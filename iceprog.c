@@ -23,8 +23,6 @@
  *  http://www.micron.com/~/media/documents/products/data-sheet/nor-flash/serial-nor/n25q/n25q_32mb_3v_65nm.pdf
  */
 
-#define _GNU_SOURCE
-
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -35,7 +33,6 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <termios.h>
 #include <fcntl.h>
 #include "serprog.h"
 #include "serial.h"
@@ -469,7 +466,7 @@ static void help(const char *progname)
 	fprintf(stderr, "       %s -t\n", progname);
 	fprintf(stderr, "\n");
 	fprintf(stderr, "General options:\n");
-	fprintf(stderr, "  -d <device string>    use the specified serial device [default " DEF_SERIAL_DEV "]\n");
+	fprintf(stderr, "  -d <device string>    use the specified serial device [default autodetect]\n");
 	fprintf(stderr, "  -o <offset in bytes>  start address for read/write [default: 0]\n");
 	fprintf(stderr, "                          (append 'k' to the argument for size in kilobytes,\n");
 	fprintf(stderr, "                          or 'M' for size in megabytes)\n");
@@ -770,9 +767,9 @@ int main(int argc, char **argv)
 	// ---------------------------------------------------------
 
         if (devstr == NULL)
-            devstr = DEF_SERIAL_DEV;
+            devstr = serialport_get_default_device();
 
-	if (serialport_open(devstr, 1000000) || serprog_detect() ) {
+	if (serialport_open(devstr, 115200) || serprog_detect() ) {
 		fprintf(stderr, "Can't find SERPROG device (device string %s).\n", devstr);
 		exit(2);
 	}
