@@ -1,6 +1,6 @@
 TARGET      = iceprog
 PKG         = $(TARGET)
-VERSION     = 0.1-1
+VERSION     = 1.0-1
 
 CC         ?= gcc
 STRIP      ?= strip

@@ -1,5 +1,5 @@
-iceprog (0.1-1) UNRELEASED; urgency=medium
+iceprog (1.0-1) UNRELEASED; urgency=medium
 
-  * Initial release. (Closes: #XXXXXX)
+  * Initial release.
 
  -- dmsc <https://github.com/dmsc/iceprog-serprog>  Mon, 29 Oct 2018 11:33:12 +0800
