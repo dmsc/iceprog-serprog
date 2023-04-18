@@ -14,7 +14,7 @@ A Programmer for iCE40 FPGA boards using flashrom serprog protocol.
 After installing the necessary tools, building `iceprog` is as simple as running the included script:
 
 ```
-./build.sh
+./build-for-windows.sh
 ```
 
 After successful compilation, the target executable file will be generated in the `build` folder.
@@ -24,10 +24,20 @@ After successful compilation, the target executable file will be generated in th
 After installing the necessary tools, building `iceprog` is as simple as running the command:
 
 ```
-make
+./build-for-linux.sh
 ```
 
-After successful compilation, the target executable file will be generated in the current folder.
+After successful compilation, the target executable file will be generated in the `build` folder.
+
+**Compiling for MacOS**
+
+After installing the necessary tools, building `iceprog` is as simple as running the command:
+
+```
+./build-for-darwin.sh
+```
+
+After successful compilation, the target executable file will be generated in the `build` folder.
 
 **Usage**
 

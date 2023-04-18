@@ -1,12 +1,13 @@
 TARGET      = iceprog
 PKG         = $(TARGET)
+VERSION     = 0.1-1
 
 CC         ?= gcc
 STRIP      ?= strip
 INSTALL    ?= install
 PREFIX     ?= /usr
 BINDIR     ?= $(PREFIX)/bin
-CFLAGS     ?= -O2 -Wall
+CFLAGS     ?= -O2 -Wall -D_FILE_OFFSET_BITS=64
 LDFLAGS    ?= 
 
 SRCS = serial.c serprog.c iceprog.c
@@ -25,6 +26,11 @@ EXEC_SUFFIX := .exe
 CFLAGS += -posix
 CFLAGS += -Dffs=__builtin_ffs
 CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
+endif
+
+ifeq ($(TARGET_OS), Darwin)
+CFLAGS += -Wno-gnu-designator
+LDFLAGS += -lobjc -Wl,-framework,IOKit -Wl,-framework,CoreFoundation -Wl,-framework,Security
 endif
 
 $(PKG): $(TARGET)$(EXEC_SUFFIX)
@@ -50,7 +56,7 @@ install-udev-rule:
 .PHONY: clean install-udev-rule
 
 debian/changelog:
-	dch --create -v 0.1-1 --package $(PKG)
+	dch --create -v $(VERSION) --package $(PKG)
 
 deb:
 	dpkg-buildpackage -b -us -uc

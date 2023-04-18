@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PWD=$(pwd)
-SRC_DIR=$PWD
+SRC_DIR=$PWD/src
 BUILD_DIR=$PWD/build
 BINDIR_X86=$BUILD_DIR/x86
 BINDIR_X64=$BUILD_DIR/x64

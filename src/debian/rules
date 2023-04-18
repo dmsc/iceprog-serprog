@@ -1,5 +1,8 @@
 #!/usr/bin/make -f
 
+export DEB_CFLAGS_SET = -O2 -Wall -D_FILE_OFFSET_BITS=64
+export DEB_LDFLAGS_SET = 
+
 %:
 	dh $@
 
