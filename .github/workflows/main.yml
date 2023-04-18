@@ -19,6 +19,14 @@ jobs:
     # the type of machine to run the job on
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        include:
+          - artifact_name: ./artifact/x86/iceprog.exe
+            asset_name: iceprog-32bit.exe
+          - artifact_name: ./artifact/x64/iceprog.exe
+            asset_name: iceprog-64bit.exe
+
     if: github.event.repository.owner.id == github.event.sender.id
 
     # create steps
@@ -53,7 +61,7 @@ jobs:
       - name: Deliver Package
         uses: actions/upload-artifact@v2
         with:
-          name: iceprog-serprog_package
+          name: iceprog-serprog
           path: ./artifact/
 
       # step6: Create Release
@@ -61,6 +69,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.YOURTOKEN }}
-          file: ./artifact/*
+          file: ${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.asset_name }}
           tag: ${{ github.ref }}
-          file_glob: true
+          overwrite: true
